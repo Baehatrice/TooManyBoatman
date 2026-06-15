@@ -206,6 +206,15 @@ wss.on('connection', (ws) => {
           }
 
           // Player enters
+          const oldSocket = clients.get(name);
+          if (oldSocket && oldSocket !== ws && oldSocket.readyState === WebSocket.OPEN) {
+            console.log(`Closing old socket for player ${name}`);
+            try {
+              oldSocket.close();
+            } catch (e) {
+              console.error("Error closing old player socket:", e);
+            }
+          }
           clientName = name;
           clients.set(name, ws);
 
@@ -303,38 +312,46 @@ wss.on('connection', (ws) => {
 
   ws.on('close', () => {
     if (clientName === '하영') {
-      gmSocket = null;
-      console.log("GM disconnected.");
-    } else if (clientName) {
-      if (state.players[clientName]) {
-        state.players[clientName].isOnline = false;
-        console.log(`Player ${clientName} disconnected.`);
-        // In lobby phase, if they disconnect we could remove them, but in-game we keep them so they can reconnect.
-        if (state.phase === 'lobby') {
-          delete state.players[clientName];
-          state.playerOrder = state.playerOrder.filter(n => n !== clientName);
-          clients.delete(clientName);
-          // Regenerate roles to ensure indices match player index
-          activeRoleIndices = shuffleArray([0, 1, 2, 3, 4, 5, 6]);
-          const currentPlayers = [...state.playerOrder];
-          state.players = {};
-          state.playerOrder = [];
-          currentPlayers.forEach((pName) => {
-            const idx = state.playerOrder.length;
-            let rIdx = idx < 7 ? activeRoleIndices[idx] : extraRoleIndices[idx - 7];
-            state.players[pName] = {
-              name: pName,
-              role: roles[rIdx],
-              alive: true,
-              isOnline: true,
-              choice: null,
-              votedFor: null
-            };
-            state.playerOrder.push(pName);
-          });
-        }
+      if (gmSocket === ws) {
+        gmSocket = null;
+        console.log("GM disconnected.");
+      } else {
+        console.log("Old GM socket closed. Keeping current GM socket.");
       }
-      broadcastState();
+    } else if (clientName) {
+      if (clients.get(clientName) === ws) {
+        if (state.players[clientName]) {
+          state.players[clientName].isOnline = false;
+          console.log(`Player ${clientName} disconnected.`);
+          // In lobby phase, if they disconnect we could remove them, but in-game we keep them so they can reconnect.
+          if (state.phase === 'lobby') {
+            delete state.players[clientName];
+            state.playerOrder = state.playerOrder.filter(n => n !== clientName);
+            clients.delete(clientName);
+            // Regenerate roles to ensure indices match player index
+            activeRoleIndices = shuffleArray([0, 1, 2, 3, 4, 5, 6]);
+            const currentPlayers = [...state.playerOrder];
+            state.players = {};
+            state.playerOrder = [];
+            currentPlayers.forEach((pName) => {
+              const idx = state.playerOrder.length;
+              let rIdx = idx < 7 ? activeRoleIndices[idx] : extraRoleIndices[idx - 7];
+              state.players[pName] = {
+                name: pName,
+                role: roles[rIdx],
+                alive: true,
+                isOnline: true,
+                choice: null,
+                votedFor: null
+              };
+              state.playerOrder.push(pName);
+            });
+          }
+        }
+        broadcastState();
+      } else {
+        console.log(`Old socket for player ${clientName} closed. Keeping active socket.`);
+      }
     }
   });
 });

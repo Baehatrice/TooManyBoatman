@@ -81,7 +81,6 @@ function connect() {
   lastActiveTime = Date.now();
   socket = new WebSocket(socketUrl);
 
-  // Setup keep-alive heartbeat and watchdog to detect dead connections
   if (pingInterval) {
     clearInterval(pingInterval);
   }
@@ -89,9 +88,9 @@ function connect() {
     if (socket && socket.readyState === WebSocket.OPEN) {
       socket.send(JSON.stringify({ type: 'ping' }));
     }
-    // Watchdog check: If no message has been received for >15 seconds, assume connection is dead
-    if (Date.now() - lastActiveTime > 15000) {
-      console.warn("Heartbeat timeout (15s). Closing socket to trigger reconnect...");
+    // Watchdog check: If no message has been received for >60 seconds, assume connection is dead
+    if (Date.now() - lastActiveTime > 60000) {
+      console.warn("Heartbeat timeout (60s). Closing socket to trigger reconnect...");
       if (socket) {
         try {
           socket.close();
@@ -100,7 +99,7 @@ function connect() {
         }
       }
     }
-  }, 10000);
+  }, 20000);
 
   socket.onopen = () => {
     console.log("Connected to server");
