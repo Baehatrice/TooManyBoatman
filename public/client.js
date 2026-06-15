@@ -442,7 +442,14 @@ function renderGame() {
     if (!p.isOnline) li.classList.add('offline');
     
     const formattedRole = p.alive ? escapeHtml(p.disguisedRole) : "사망";
-    li.textContent = `(${escapeHtml(p.name)}) : ${formattedRole}`;
+    
+    // For GM, display checkmark [✓] if player has voted, [..] if pending
+    let voteStatus = "";
+    if (isGM && p.alive) {
+      voteStatus = p.voted ? " [✓]" : " [..]";
+    }
+    
+    li.textContent = `(${escapeHtml(p.name)}) : ${formattedRole}${voteStatus}`;
     
     listUl.appendChild(li);
   });
