@@ -80,7 +80,7 @@ h1, h2, h3, h4, h5, h6, strong, b, button, input {
 button {
   cursor: pointer;
   font-family: inherit;
-  font-weight: bold;
+  font-weight: normal;
   background-color: #000000;
   color: #ffffff;
   border: 2px solid #ffffff;
@@ -104,7 +104,7 @@ button:disabled {
 .highlight {
   background-color: #ffffff !important;
   color: #000000 !important;
-  font-weight: bold;
+  font-weight: normal;
   padding: 0.1rem 0.4rem;
   display: inline-block;
 }
@@ -186,7 +186,7 @@ button:disabled {
   margin-top: 1rem;
   font-size: 0.85rem;
   height: 20px;
-  font-weight: bold;
+  font-weight: normal;
 }
 
 /* 2. Lobby Screen */
@@ -266,7 +266,7 @@ button:disabled {
   padding: 0.1rem 0.4rem;
   background-color: #ffffff;
   color: #000000;
-  font-weight: bold;
+  font-weight: normal;
 }
 
 /* Identity Card */
@@ -327,7 +327,7 @@ button:disabled {
   font-size: 0.8rem;
   color: #aaaaaa;
   margin-bottom: 0.2rem;
-  font-weight: bold;
+  font-weight: normal;
 }
 
 .info-val {
@@ -356,7 +356,7 @@ button:disabled {
 
 .gm-status {
   font-size: 0.95rem;
-  font-weight: bold;
+  font-weight: normal;
 }
 
 .reset-btn {
@@ -428,7 +428,7 @@ button:disabled {
 .participant-title {
   font-size: 1.4rem;
   text-align: center;
-  font-weight: bold;
+  font-weight: normal;
   margin-top: 17px;
   height: 69px;
   line-height: 69px;
@@ -499,7 +499,7 @@ button:disabled {
 
 .gm-vote-tally p {
   font-size: 1.25rem;
-  font-weight: bold;
+  font-weight: normal;
   margin-bottom: 0.8rem;
 }
 
@@ -554,7 +554,7 @@ button:disabled {
 .choice-tag {
   font-size: 0.95rem;
   color: #aaaaaa;
-  font-weight: bold;
+  font-weight: normal;
   display: block;
   margin-bottom: 0.3rem;
   text-transform: uppercase;
@@ -573,7 +573,7 @@ button:disabled {
 .choice-text-container.selected .choice-desc {
   background-color: #ffffff !important;
   color: #000000 !important;
-  font-weight: bold;
+  font-weight: normal;
   border-color: #000000 !important;
   box-shadow: 0 0 0 3px #ffffff;
 }
@@ -643,9 +643,6 @@ button:disabled {
 
 .nudge-tip-container {
   position: absolute;
-  left: 420px;
-  top: 940px;
-  width: 530px;
   height: auto;
   min-height: 80px;
   font-size: 1.25rem;
@@ -654,24 +651,26 @@ button:disabled {
   padding: 0.8rem 1.4rem;
   border: 3px double #000000;
   box-shadow: 0 0 0 4px #ffffff;
-  font-weight: bold;
+  font-weight: normal;
   line-height: 1.5;
-  pointer-events: auto;
+  pointer-events: none !important; /* Clicks pass through to elements underneath */
+  z-index: 75;
 }
 
 .status-right {
   position: absolute;
-  left: 980px;
+  left: 880px; /* Centered horizontally (960 - 80) */
   top: 940px;
   width: 160px;
   height: 60px;
   pointer-events: auto;
+  z-index: 80;
 }
 
 .badge {
   font-size: 0.95rem;
   padding: 0.5rem 1rem;
-  font-weight: bold;
+  font-weight: normal;
 }
 
 #selection-complete-badge {
@@ -681,7 +680,7 @@ button:disabled {
   align-items: center;
   justify-content: center;
   font-size: 1.25rem;
-  font-weight: bold;
+  font-weight: normal;
   background-color: #ffffff;
   color: #000000;
   border: 2px solid #000000;
@@ -704,7 +703,7 @@ button:disabled {
   border: 2px solid #ffffff;
   color: #ffffff;
   font-size: 1.2rem;
-  font-weight: bold;
+  font-weight: normal;
 }
 
 #secret-details-content {
@@ -770,7 +769,7 @@ button:disabled {
 .list-choices-title {
   font-size: 1.1rem;
   margin-bottom: 0.8rem;
-  font-weight: bold;
+  font-weight: normal;
   text-align: center;
 }
 
@@ -792,7 +791,7 @@ button:disabled {
   text-align: center;
   cursor: pointer;
   font-size: 0.95rem;
-  font-weight: bold;
+  font-weight: normal;
 }
 
 .grid-choice-card:hover {
@@ -860,7 +859,7 @@ button:disabled {
 
 .score-summary span {
   color: #ffffff;
-  font-weight: bold;
+  font-weight: normal;
 }
 
 .restart-msg {

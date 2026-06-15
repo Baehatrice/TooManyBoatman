@@ -96,6 +96,7 @@ let state = {
   score_arrival: 0,    // 입항 점수
   score_mountain: 0,   // 망망산야 점수
   roundResultText: '',
+  winningOption: '',   // winning option key ('A', 'B', 'C', 'none', or list of names)
   endingText: '',
   rolePool: []         // shuffled array of role indices
 };
@@ -120,6 +121,7 @@ function sendStateTo(ws, name) {
     score_arrival: state.score_arrival,
     score_mountain: state.score_mountain,
     roundResultText: state.roundResultText,
+    winningOption: state.winningOption,
     endingText: state.endingText,
     playersList: state.playerOrder.map(pName => {
       const p = state.players[pName];
@@ -330,6 +332,7 @@ function resetGame() {
     score_arrival: 0,
     score_mountain: 0,
     roundResultText: '',
+    winningOption: '',
     endingText: '',
     rolePool: []
   };
@@ -379,6 +382,7 @@ function handleGMNext() {
 }
 
 function clearVotes() {
+  state.winningOption = '';
   state.playerOrder.forEach(name => {
     const p = state.players[name];
     p.choice = null;
@@ -393,6 +397,7 @@ function processVotes() {
 
   if (totalAlive === 0) {
     state.roundResultText = "모든 생존자가 사라졌습니다.";
+    state.winningOption = '';
     return;
   }
 
@@ -413,7 +418,8 @@ function processVotes() {
     if (noneCount === totalAlive) {
       // 1. 모두가 '아무도 버리지 않는다'를 선택한 경우
       state.score_arrival += 1;
-      state.roundResultText = "아무도 버리고 갈 수 없습니다. 천운으로, 구명보트는 9명을 태우고도 가라앉지 않을듯 합니다.\n(입항 점수 +1 / 모두 생존)";
+      state.winningOption = 'none';
+      state.roundResultText = "아무도 버리고 갈 수 없습니다. 천운으로, 구명보트는 9명을 태우고도 가라앉지 않을듯 합니다.\n(모두 생존)";
     } else {
       // Check if everyone got exactly 1 vote
       let everyoneGotOne = true;
@@ -426,7 +432,8 @@ function processVotes() {
       if (everyoneGotOne && noneCount === 0) {
         // 2. 모두가 1표씩 얻은 경우
         state.score_mountain += 1;
-        state.roundResultText = "아무도 버리고 갈 수 없습니다. 천운으로, 구명보트는 9명을 태우고도 가라앉지 않을듯 합니다.\n(망망산야 점수 +1 / 모두 생존)";
+        state.winningOption = 'none';
+        state.roundResultText = "아무도 버리고 갈 수 없습니다. 천운으로, 구명보트는 9명을 태우고도 가라앉지 않을듯 합니다.\n(모두 생존)";
       } else {
         // 3. 0표를 받은 사람이 있음
         // Anyone who got >= 1 vote is abandoned (dies). The 0-vote players survive.
@@ -440,7 +447,8 @@ function processVotes() {
         });
 
         const survivorsCount = alivePlayers.filter(name => state.players[name].alive).length;
-        state.roundResultText = `인원들 중 일부만 구명보트를 타고 탈출합니다.\n(버려진 사공: ${abandoned.join(', ')} / 남은 인원만 구명보트에 오릅니다.)`;
+        state.winningOption = abandoned.join(', ');
+        state.roundResultText = `인원들 중 일부만 구명보트를 타고 탈출합니다.\n(남은 인원만 구명보트에 오릅니다.)`;
       }
     }
     return;
@@ -461,15 +469,18 @@ function processVotes() {
     const aCount = votes['A'] || 0;
     const bCount = votes['B'] || 0;
     if (aCount === totalAlive) {
+      state.winningOption = 'A';
       state.score_arrival += 1;
-      state.roundResultText = "공동 창고에 보관하니 모두가 매일 공평한 양으로 나눠먹을 수 있게 됐습니다.\n(입항 점수 +1)";
+      state.roundResultText = "공동 창고에 보관하니 모두가 매일 공평한 양으로 나눠먹을 수 있게 됐습니다.";
     } else if (bCount === totalAlive) {
+      state.winningOption = 'B';
       // Kill all
       alivePlayers.forEach(name => state.players[name].alive = false);
-      state.roundResultText = "이런, 하늘에서 사나운 새가 와서 가방을 물고 가버렸습니다. 이제 배에 식량은 없습니다.\n(모든 플레이어 사망)";
+      state.roundResultText = "이런, 하늘에서 사나운 새가 와서 가방을 물고 가버렸습니다. 이제 배에 식량은 없습니다. (모든 플레이어 사망)";
     } else {
+      state.winningOption = 'A+B';
       state.score_mountain += 1;
-      state.roundResultText = "이런, 하늘에서 사나운 새가 와서 가방을 물고 가버렸습니다. 가방이 눈앞에서 사라지고 절규하는 사람들을 보며, 나머지 사람들은 가방에 식량을 숨겨두고 있는 사람들이 있음을 눈치챘습니다.\n(망망산야 점수 +1)";
+      state.roundResultText = "이런, 하늘에서 사나운 새가 와서 가방을 물고 가버렸습니다. 가방이 눈앞에서 사라지고 절규하는 사람들을 보며, 나머지 사람들은 가방에 식량을 숨겨두고 있는 사람들이 있음을 눈치챘습니다.";
     }
     return;
   }
@@ -494,29 +505,30 @@ function processVotes() {
 
   // Tie breaker (randomly choose between the tied options)
   const winningOption = winningOptions[Math.floor(Math.random() * winningOptions.length)];
+  state.winningOption = winningOption;
   console.log(`Round ${round} voting results:`, votes, `Winner: ${winningOption}`);
 
   if (round === 1) {
     if (winningOption === 'A') {
       state.score_arrival += 1;
-      state.roundResultText = "다행히 아무 위험없이 넘어갔습니다.\n(입항 점수 +1)";
+      state.roundResultText = "다행히 아무 위험없이 넘어갔습니다.";
     } else if (winningOption === 'B') {
       state.score_mountain += 1;
-      state.roundResultText = "서쪽에는 숨겨진 암초들이 더 많았습니다. 오히려 이걸 피해가느라 더 많은 시간과 노력을 쓰게 됐네요.\n(망망산야 점수 +1)";
+      state.roundResultText = "서쪽에는 숨겨진 암초들이 더 많았습니다. 오히려 이걸 피해가느라 더 많은 시간과 노력을 쓰게 됐네요.";
     } else if (winningOption === 'C') {
       alivePlayers.forEach(name => state.players[name].alive = false);
-      state.roundResultText = "배는 암초에 부딪히고 말았습니다.\n(모든 플레이어 사망)";
+      state.roundResultText = "배는 암초에 부딪히고 말았습니다. (모든 플레이어 사망)";
     }
   } else if (round === 2) {
     if (winningOption === 'A') {
       alivePlayers.forEach(name => state.players[name].alive = false);
-      state.roundResultText = "등불이 꺼지자 강은 완전히 검은 물이 되었습니다. 아무도 앞을 볼 수 없게 되었습니다. 잠시 뒤 배 밑바닥이 무언가에 길게 긁혔고, 차가운 물이 밀려들어왔습니다.\n(모든 플레이어 사망)";
+      state.roundResultText = "등불이 꺼지자 강은 완전히 검은 물이 되었습니다. 아무도 앞을 볼 수 없게 되었습니다. 잠시 뒤 배 밑바닥이 무언가에 길게 긁혔고, 차가운 물이 밀려들어왔습니다. (모든 플레이어 사망)";
     } else if (winningOption === 'B') {
       state.score_arrival += 1;
-      state.roundResultText = "등불은 밤새 꺼지지 않았습니다. 새벽녘, 선창 아래에서 기름병들이 발견되었습니다. 오히려 기름은 넉넉했고, 다들 안도합니다.\n(입항 점수 +1)";
+      state.roundResultText = "등불은 밤새 꺼지지 않았습니다. 새벽녘, 선창 아래에서 기름병들이 발견되었습니다. 오히려 기름은 넉넉했고, 다들 안도합니다.";
     } else if (winningOption === 'C') {
       state.score_mountain += 1;
-      state.roundResultText = "불을 조금이라도 킨 덕에, 위험한 상황들은 대처할 수 있었지만 어둠 속에서 모두가 서로를 의심하기 시작했습니다. 뒤늦게 숨겨진 기름병들이 발견되자, 배 안의 침묵은 더 무거워졌습니다.\n(망망산야 점수 +1)";
+      state.roundResultText = "불을 조금이라도 킨 덕에, 위험한 상황들은 대처할 수 있었지만 어둠 속에서 모두가 서로를 의심하기 시작했습니다. 뒤늦게 숨겨진 기름병들이 발견되자, 배 안의 침묵은 더 무거워졌습니다.";
     }
   } else if (round === 3) {
     if (winningOption === 'A') {
@@ -528,17 +540,16 @@ function processVotes() {
           killedCount++;
         }
       });
-      state.roundResultText = "이런... 파란 줄 자리로 너무 많이 몰려든 탓에 중심을 잃고 쓰러졌습니다. 그 순간, 폭풍이 당신들을 데리고 가버렸습니다.\n(파란 줄을 선택한 사공 사망)";
+      state.roundResultText = "이런... 파란 줄 자리로 너무 많이 몰려든 탓에 중심을 잃고 쓰러졌습니다. 그 순간, 폭풍이 당신들을 데리고 가버렸습니다. (파란 줄을 선택한 사공 사망)";
     } else if (winningOption === 'B') {
-      state.roundResultText = "생각보다 폭풍은 거세지 않았고, 모든 이들이 살아남았습니다.\n(모두 생존)";
+      state.roundResultText = "생각보다 폭풍은 거세지 않았고, 모든 이들이 살아남았습니다.";
     }
   } else if (round === 5) {
     if (winningOption === 'A') {
       state.score_arrival += 1;
-      state.roundResultText = "돈 벌 창구가 없어진건 슬프지만, 그래도 사람이 죽는것보단 낫습니다.\n(입항 점수 +1)";
+      state.roundResultText = "돈 벌 창구가 없어진건 슬프지만, 그래도 사람이 죽는것보단 낫습니다.";
     } else if (winningOption === 'B') {
       // Check if Player 6 (탈옥자/수리공) is alive
-      // Player 6 has role id 6. Let's find who has role.id === 6
       let repairmanAlive = false;
       let repairmanName = '';
       state.playerOrder.forEach(name => {
@@ -553,17 +564,17 @@ function processVotes() {
 
       if (repairmanAlive) {
         state.score_arrival += 1;
-        state.roundResultText = `한명이 재능을 뽐내며 멋지게 수리를 성공했습니다. (${repairmanName}의 눈부신 활약!)\n(입항 점수 +1)`;
+        state.roundResultText = `한명이 재능을 뽐내며 멋지게 수리를 성공했습니다. (${repairmanName}의 눈부신 활약!)`;
       } else {
         alivePlayers.forEach(name => state.players[name].alive = false);
-        state.roundResultText = "함부로 도전하지 않는 편이 나았을 것 같습니다...\n(모든 플레이어 사망)";
+        state.roundResultText = "함부로 도전하지 않는 편이 나았을 것 같습니다... (모든 플레이어 사망)";
       }
     } else if (winningOption === 'C') {
       // Check if unanimous C
       const cCount = alivePlayers.filter(name => state.players[name].choice === 'C').length;
       if (cCount === totalAlive) {
         alivePlayers.forEach(name => state.players[name].alive = false);
-        state.roundResultText = "누굴 버리고 갈지 싸우다가 모두가 폭풍에 휩쓸려 사라졌습니다.\n(모든 플레이어 사망)";
+        state.roundResultText = "누굴 버리고 갈지 싸우다가 모두가 폭풍에 휩쓸려 사라졌습니다. (모든 플레이어 사망)";
       } else {
         state.score_mountain += 1;
         // Kill those who did NOT choose C
@@ -574,7 +585,7 @@ function processVotes() {
             killed.push(name);
           }
         });
-        state.roundResultText = `일부 인원을 버리기로 했던 사람들에 의해, 나머지 인원들이 버려졌습니다.\n(버려진 사공: ${killed.join(', ')} / 망망산야 점수 +1)`;
+        state.roundResultText = `일부 인원을 버리기로 했던 사람들에 의해, 나머지 인원들이 버려졌습니다. (버려진 사공: ${killed.join(', ')})`;
       }
     }
   }

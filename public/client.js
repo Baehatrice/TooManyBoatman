@@ -388,8 +388,6 @@ function renderGame() {
     detailsContent.innerHTML = `
       <p><strong>대외 신분:</strong> ${escapeHtml(details.role.disguisedRole)}</p>
       <p><strong>진짜 신분:</strong> <span class="highlight">${escapeHtml(details.role.realRole)}</span></p>
-      ${details.role.secretInfo ? `<p><strong>비밀 정보:</strong> ${escapeHtml(details.role.secretInfo)}</p>` : ''}
-      ${details.role.reason ? `<p><strong>숨기는 이유:</strong> ${escapeHtml(details.role.reason)}</p>` : ''}
     `;
 
     // Hook up trigger event
@@ -415,7 +413,21 @@ function renderGame() {
       narrativeText.innerHTML = "라운드 진행 중...";
     }
   } else if (phase === 'round_result') {
-    narrativeText.innerHTML = `[ 투표 결과 안내 ]\n\n${gameState.roundResultText}`;
+    let choiceHeader = "";
+    if (round >= 1 && round <= 5 && gameState.winningOption && roundData[round] && roundData[round].choices) {
+      const selectedChoice = roundData[round].choices.find(c => c.id === gameState.winningOption);
+      if (selectedChoice) {
+        const cleanChoiceText = selectedChoice.text.replace(/\n/g, " ");
+        choiceHeader = `'${cleanChoiceText}' 이(가) 선택되었습니다.\n\n`;
+      }
+    } else if (round === 6 && gameState.winningOption) {
+      if (gameState.winningOption === 'none') {
+        choiceHeader = "'아무도 버리지 않는다'가 선택되었습니다.\n\n";
+      } else {
+        choiceHeader = `'구명보트에서 버릴 사람'으로 [${gameState.winningOption}] 이(가) 선택되었습니다.\n\n`;
+      }
+    }
+    narrativeText.innerHTML = `[ 선택 결과 안내 ]\n\n${choiceHeader}${gameState.roundResultText}`;
   }
 
   // Render Bottom panel UI ChoiceBox and paddles
@@ -486,6 +498,7 @@ function renderGame() {
 
         const nudgeTip = document.getElementById('nudge-tip-container');
         nudgeTip.classList.add('hidden');
+        nudgeTip.removeAttribute('style'); // Clear dynamic coordinates
 
         // Render Left Choice
         if (mapped.left) {
@@ -496,6 +509,9 @@ function renderGame() {
           if (activeNudge && activeNudge.choice === mapped.left.id) {
             textLeft.classList.add('nudged');
             nudgeTip.innerHTML = `<strong>★ 미션 팁:</strong> ${escapeHtml(activeNudge.text)}`;
+            nudgeTip.style.left = "80px";
+            nudgeTip.style.top = "760px";
+            nudgeTip.style.width = "520px";
             nudgeTip.classList.remove('hidden');
           } else {
             textLeft.classList.remove('nudged');
@@ -513,6 +529,9 @@ function renderGame() {
           if (activeNudge && activeNudge.choice === mapped.center.id) {
             textCenter.classList.add('nudged');
             nudgeTip.innerHTML = `<strong>★ 미션 팁:</strong> ${escapeHtml(activeNudge.text)}`;
+            nudgeTip.style.left = "710px";
+            nudgeTip.style.top = "660px";
+            nudgeTip.style.width = "500px";
             nudgeTip.classList.remove('hidden');
           } else {
             textCenter.classList.remove('nudged');
@@ -534,6 +553,9 @@ function renderGame() {
           if (activeNudge && activeNudge.choice === mapped.right.id) {
             textRight.classList.add('nudged');
             nudgeTip.innerHTML = `<strong>★ 미션 팁:</strong> ${escapeHtml(activeNudge.text)}`;
+            nudgeTip.style.left = "1320px";
+            nudgeTip.style.top = "760px";
+            nudgeTip.style.width = "520px";
             nudgeTip.classList.remove('hidden');
           } else {
             textRight.classList.remove('nudged');
@@ -579,7 +601,7 @@ function renderGame() {
         gmNextBtn.textContent = "선택지 공개하기";
         gmNextBtn.disabled = false;
       } else {
-        gmNextBtn.textContent = "투표 완료 및 집계";
+        gmNextBtn.textContent = "선택 완료 및 집계";
         // Allow GM to proceed even if not fully voted (e.g. bypass disconnected)
         gmNextBtn.disabled = false; 
       }
