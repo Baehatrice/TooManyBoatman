@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>사공이 많으면 배가 산으로 간다</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- App Container -->
+  <div id="app">
+    
+    <!-- Retro Game Canvas (1920x1080 scaled wrapper) -->
+    <div class="retro-canvas">
+      
+      <!-- Screen 1: Login / Landing -->
+      <div id="login-screen" class="canvas-screen active">
+        <div class="login-box">
+          <h1 class="game-title">사공이 많으면<br><span class="highlight">배가 산으로 간다</span></h1>
+          <p class="game-subtitle">텍스트 멀티플레이어 어드벤처</p>
+          <div class="input-group">
+            <input type="text" id="username-input" placeholder="이름을 입력하세요" autocomplete="off">
+            <button id="join-btn">배에 탑승하기</button>
+          </div>
+          <div id="login-error" class="error-msg"></div>
+        </div>
+      </div>
+
+      <!-- Screen 2: Lobby / Waiting Room -->
+      <div id="lobby-screen" class="canvas-screen">
+        <div class="lobby-container">
+          <div class="lobby-header">
+            <h2>준비 대기실</h2>
+            <p class="lobby-sub">함께 배에 오를 사공들을 기다리고 있습니다...</p>
+          </div>
+
+          <div class="lobby-content">
+            <!-- Left side: Joined players list -->
+            <div class="lobby-players-section">
+              <h3>탑승한 사공들 (<span id="lobby-player-count">0</span> / 11)</h3>
+              <ul id="lobby-players-list">
+                <!-- Dynamically populated -->
+              </ul>
+            </div>
+
+            <!-- Right side: Role assignment details -->
+            <div class="lobby-role-section" id="lobby-role-card">
+              <!-- Dynamically populated secret identity card -->
+            </div>
+          </div>
+
+          <div class="lobby-footer">
+            <div id="gm-controls" class="gm-controls hidden">
+              <p class="gm-status">GM 관리 화면 (현재 참가인원: <span id="gm-player-count">0</span>명)</p>
+              <div class="gm-btn-group">
+                <button id="start-game-btn" disabled>게임 시작 (최소 3명)</button>
+                <button id="reset-game-btn" class="reset-btn">방 폭파하기</button>
+              </div>
+            </div>
+            <div id="player-status" class="player-status-container-lobby">
+              <p>GM이 게임을 시작할 때까지 잠시 대기해 주세요...</p>
+              <button id="leave-lobby-btn" class="leave-btn">대기실 나가기</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Screen 3: Intro & Narrative Game Screen (1920x1080 Layered Canvas) -->
+      <div id="game-screen" class="canvas-screen">
+        
+        <!-- LAYER 1: Background (dithered gray tile texture) -->
+        <img id="bg-layer" src="/Resources/Background.jpg" class="retro-layer" alt="Background">
+
+        <!-- LAYER 2: Round Image (Snowy rock landscape, R1-Img.png) -->
+        <img id="narrative-image" src="" class="retro-layer" alt="Round Image" onerror="this.onerror=null; this.src='/Resources/R1-Img.png';">
+
+        <!-- LAYER 3: Layout Frames (Double border grid overlay) -->
+        <img id="layout-layer" src="/Resources/Layout.png" class="retro-layer" alt="Layout Overlay">
+
+        <!-- LAYER 4: Bottom Gradient (Dither shading at screen bottom) -->
+        <img id="gradient-layer" src="/Resources/Gradient.png" class="retro-layer" alt="Gradient Shading">
+
+        <!-- LAYER 5: ChoiceBox (Bottom black container overlay) -->
+        <img id="choicebox-layer" src="/Resources/ChoiceBox.png" class="retro-layer hidden" alt="Choice Box Frame">
+
+        <!-- LAYER 6: Boat Hull Overlay (Bottom center) -->
+        <img id="boat-layer" src="/Resources/Boat.png" class="retro-layer hidden" alt="Boat Hull">
+
+        <!-- LAYER 7: Left Paddle Overlay -->
+        <img id="paddle-l-layer" src="/Resources/Paddle_L.png" class="retro-layer hidden" alt="Left Paddle">
+
+        <!-- LAYER 8: Right Paddle Overlay -->
+        <img id="paddle-r-layer" src="/Resources/Paddle_R.png" class="retro-layer hidden" alt="Right Paddle">
+
+        <!-- LAYER 9: Participant Box Frame (Top-left double-border frame) -->
+        <img id="participant-layer" src="/Resources/ParticipantBox.png" class="retro-layer" alt="Participant Box Overlay">
+
+        <!-- DYNAMIC CONTENT: Participant Box Overlay Content -->
+        <div id="participant-content-box" class="dynamic-overlay-box">
+          <div class="participant-title">참가자</div>
+          <ul id="game-players-list">
+            <!-- Dynamically populated name list formatted: (이름) : 신분 -->
+          </ul>
+        </div>
+
+        <!-- DYNAMIC CONTENT: Story Narration / Text Box (Right Panel) -->
+        <div id="story-content-box" class="dynamic-overlay-box">
+          <p id="narrative-text">앞에 커다란 바위가 보입니다. 어떻게 할까요?</p>
+        </div>
+
+        <!-- DYNAMIC CONTENT: Choice text strings overlay (placed on top of boat and paddles) -->
+        <!-- Center Choice Text -->
+        <div id="choice-text-center" class="choice-text-container center hidden">
+          <span class="choice-tag">[가운데 배]</span>
+          <p class="choice-desc">그대로 전진</p>
+        </div>
+        <!-- Left Choice Text -->
+        <div id="choice-text-left" class="choice-text-container left hidden">
+          <span class="choice-tag">[왼쪽 노]</span>
+          <p class="choice-desc">서쪽으로 우회</p>
+        </div>
+        <!-- Right Choice Text -->
+        <div id="choice-text-right" class="choice-text-container right hidden">
+          <span class="choice-tag">[오른쪽 노]</span>
+          <p class="choice-desc">동쪽으로 우회</p>
+        </div>
+
+        <!-- DYNAMIC CONTENT: Custom list choice container (For R6 players name voting) -->
+        <div id="list-choices-container" class="hidden">
+          <div class="list-choices-title">구명보트에서 버릴 사람을 선택하세요:</div>
+          <div id="list-choices" class="list-choices-grid">
+            <!-- Dynamic player names grid -->
+          </div>
+        </div>
+
+        <!-- DYNAMIC CONTENT: Hotspot Hitboxes (for clicking / hovering Paddles/Boat) -->
+        <div id="hotspot-left" class="choice-hotspot left hidden"></div>
+        <div id="hotspot-center" class="choice-hotspot center hidden"></div>
+        <div id="hotspot-right" class="choice-hotspot right hidden"></div>
+
+        <!-- DYNAMIC CONTENT: Status/Nudge Bar for players -->
+        <div id="player-status-bar" class="dynamic-status-bar hidden">
+          <div id="nudge-tip-container" class="nudge-tip-container hidden">
+            <!-- Nudge description -->
+          </div>
+          <div class="status-right">
+            <span id="selection-complete-badge" class="badge hidden">선택완료</span>
+          </div>
+        </div>
+
+        <!-- DYNAMIC CONTENT: Toggle Secret Role button on game screen -->
+        <div id="secret-trigger-wrapper" class="hidden">
+          <button id="toggle-secret-btn">내 비밀 신분 확인</button>
+          <div id="secret-details-content" class="hidden"></div>
+        </div>
+
+        <!-- DYNAMIC CONTENT: GM Screen Overlays (Next buttons, vote counts) -->
+        <div id="gm-game-controls" class="gm-game-controls hidden">
+          <div class="gm-vote-tally">
+            <p>투표 완료 현황: <span id="gm-play-voted-count">0</span> / <span id="gm-play-alive-count">0</span> 명</p>
+            <div class="vote-progress-bar-container">
+              <div class="vote-progress-bar" id="vote-progress"></div>
+            </div>
+          </div>
+          <button id="gm-next-btn" class="action-btn">다음 단계로</button>
+          <button id="gm-reset-in-game" class="reset-btn">방 폭파</button>
+        </div>
+
+        <!-- Elimination/Death Overlay -->
+        <div id="death-overlay" class="death-overlay hidden">
+          <div class="death-box">
+            <h2>GAME OVER</h2>
+            <p>당신은 배에서 탈락했습니다. 다른 이들의 항해를 지켜보세요.</p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Screen 4: Ending -->
+      <div id="ending-screen" class="canvas-screen">
+        <div class="ending-box">
+          <h1 class="ending-title">운항 결과</h1>
+          <div class="ending-content-card">
+            <p id="ending-text" class="ending-narration">
+              엔딩 문구...
+            </p>
+          </div>
+          <div class="score-summary">
+            <p>최종 스코어</p>
+            <p>입항 점수: <span id="end-score-arrival">0</span> | 산 점수: <span id="end-score-mountain">0</span></p>
+          </div>
+          <button id="restart-game-btn" class="hidden">대기방으로 돌아가기 (GM 전용)</button>
+          <p id="player-restart-msg" class="restart-msg">GM이 게임을 초기화하기를 대기하고 있습니다...</p>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <script src="client.js"></script>
+</body>
+</html>
