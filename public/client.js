@@ -3,6 +3,7 @@ let currentName = "";
 let isGM = false;
 let gameState = null;
 let pingInterval = null;
+let lastActiveTime = Date.now();
 
 // Game rounds constant data for presentation
 const roundData = {
@@ -76,9 +77,11 @@ window.addEventListener('DOMContentLoaded', resizeCanvas);
 function connect() {
   const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
   const socketUrl = `${protocol}//${window.location.host}`;
+  
+  lastActiveTime = Date.now();
   socket = new WebSocket(socketUrl);
 
-  // Setup keep-alive heartbeat to prevent Render timeout closures
+  // Setup keep-alive heartbeat and watchdog to detect dead connections
   if (pingInterval) {
     clearInterval(pingInterval);
   }
@@ -86,16 +89,29 @@ function connect() {
     if (socket && socket.readyState === WebSocket.OPEN) {
       socket.send(JSON.stringify({ type: 'ping' }));
     }
-  }, 20000);
+    // Watchdog check: If no message has been received for >15 seconds, assume connection is dead
+    if (Date.now() - lastActiveTime > 15000) {
+      console.warn("Heartbeat timeout (15s). Closing socket to trigger reconnect...");
+      if (socket) {
+        try {
+          socket.close();
+        } catch (e) {
+          console.error("Error closing socket on timeout:", e);
+        }
+      }
+    }
+  }, 10000);
 
   socket.onopen = () => {
     console.log("Connected to server");
+    lastActiveTime = Date.now();
     if (currentName) {
       socket.send(JSON.stringify({ type: 'join', name: currentName }));
     }
   };
 
   socket.onmessage = (event) => {
+    lastActiveTime = Date.now();
     const data = JSON.parse(event.data);
     
     if (data.type === 'error') {
@@ -898,3 +914,17 @@ function escapeHtml(str) {
 
 // Initial Connection
 connect();
+
+// Visibility Change Watcher: instantly reconnect or ping when tab wakes up
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') {
+    console.log("Tab became visible, verifying connection...");
+    if (!socket || socket.readyState !== WebSocket.OPEN) {
+      connect();
+    } else {
+      // Update lastActiveTime to prevent watchdog firing right after wake
+      lastActiveTime = Date.now();
+      socket.send(JSON.stringify({ type: 'ping' }));
+    }
+  }
+});

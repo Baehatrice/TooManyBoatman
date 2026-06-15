@@ -293,7 +293,7 @@ wss.on('connection', (ws) => {
           break;
 
         case 'ping':
-          // Keep-alive heartbeat, do nothing
+          ws.send(JSON.stringify({ type: 'pong' }));
           break;
       }
     } catch (e) {
