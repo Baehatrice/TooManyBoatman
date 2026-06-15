@@ -185,8 +185,13 @@ wss.on('connection', (ws) => {
 
           if (name === '하영') {
             if (gmSocket && gmSocket.readyState === WebSocket.OPEN) {
-              ws.send(JSON.stringify({ type: 'error', message: '이미 게임 마스터가 입장해 있습니다.' }));
-              return;
+              console.log("GM (하영) re-entered. Closing old socket.");
+              try {
+                gmSocket.close();
+              } catch (e) {
+                console.error("Error closing old GM socket:", e);
+              }
+              gmSocket = null;
             }
             // GM enters
             gmSocket = ws;

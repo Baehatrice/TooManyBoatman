@@ -572,7 +572,7 @@ function renderGame() {
 
     const gmNextBtn = document.getElementById('gm-next-btn');
     if (phase === 'intro') {
-      gmNextBtn.textContent = "첫 투표로 진행";
+      gmNextBtn.textContent = "시작하기";
       gmNextBtn.disabled = false;
     } else if (phase === 'round') {
       if (subphase === 'question') {
