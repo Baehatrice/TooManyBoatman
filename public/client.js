@@ -53,7 +53,7 @@ const roundData = {
   },
   6: {
     title: "라운드 6: 침몰하는 구명보트",
-    narrative: "배가 기울기 시작합니다. 구명보트에는 7명밖에 탈 수 없어보입니다. 누구를 버리고 가야할까요?"
+    narrative: "배가 기울기 시작합니다. 그런데 구명보트가 작아 모두가 탈 수 없을 것 같군요...누구를 버리고 가야할까요?"
   }
 };
 
@@ -354,6 +354,14 @@ function renderGame() {
   const phase = gameState.phase;
   const subphase = gameState.roundSubphase;
   
+  // Reset nudge tip to prevent round-to-round leakages
+  const nudgeTip = document.getElementById('nudge-tip-container');
+  if (nudgeTip) {
+    nudgeTip.classList.add('hidden');
+    nudgeTip.removeAttribute('style');
+    nudgeTip.innerHTML = "";
+  }
+  
   // Set up background images based on round
   const bgImg = document.getElementById('bg-layer');
   const narrativeImg = document.getElementById('narrative-image');
@@ -473,8 +481,11 @@ function renderGame() {
     deathOverlay.classList.remove('hidden');
   }
 
-  // Show boat/paddles in rounds 1-5
-  if ((phase === 'round' || phase === 'round_result') && round >= 1 && round <= 5) {
+  // Show boat/paddles in rounds 1-6, but hide it in R6 voting subphase
+  const showBoatPaddles = (phase === 'round' || phase === 'round_result') && 
+                          (round >= 1 && round <= 6) && 
+                          !(round === 6 && subphase === 'voting');
+  if (showBoatPaddles) {
     boat.classList.remove('hidden');
     paddleL.classList.remove('hidden');
     paddleR.classList.remove('hidden');
@@ -516,7 +527,7 @@ function renderGame() {
             textLeft.classList.add('nudged');
             nudgeTip.innerHTML = `<strong>★ 미션 팁:</strong> ${escapeHtml(activeNudge.text)}`;
             nudgeTip.style.left = "80px";
-            nudgeTip.style.top = "760px";
+            nudgeTip.style.top = (660 + textLeft.offsetHeight + 10) + "px";
             nudgeTip.style.width = "520px";
             nudgeTip.classList.remove('hidden');
           } else {
@@ -536,7 +547,7 @@ function renderGame() {
             textCenter.classList.add('nudged');
             nudgeTip.innerHTML = `<strong>★ 미션 팁:</strong> ${escapeHtml(activeNudge.text)}`;
             nudgeTip.style.left = "710px";
-            nudgeTip.style.top = "660px";
+            nudgeTip.style.top = (570 + textCenter.offsetHeight + 10) + "px";
             nudgeTip.style.width = "500px";
             nudgeTip.classList.remove('hidden');
           } else {
@@ -560,7 +571,7 @@ function renderGame() {
             textRight.classList.add('nudged');
             nudgeTip.innerHTML = `<strong>★ 미션 팁:</strong> ${escapeHtml(activeNudge.text)}`;
             nudgeTip.style.left = "1320px";
-            nudgeTip.style.top = "760px";
+            nudgeTip.style.top = (660 + textRight.offsetHeight + 10) + "px";
             nudgeTip.style.width = "520px";
             nudgeTip.classList.remove('hidden');
           } else {
@@ -594,6 +605,16 @@ function renderGame() {
     // Tally values
     document.getElementById('gm-play-voted-count').textContent = gameState.votedCount;
     document.getElementById('gm-play-alive-count').textContent = gameState.alivePlayersCount;
+    
+    // Toggle tally text visibility (Only visible during R1-R6, i.e. phase === 'round')
+    const tallyText = document.getElementById('gm-vote-tally-text');
+    if (tallyText) {
+      if (phase === 'round') {
+        tallyText.classList.remove('hidden');
+      } else {
+        tallyText.classList.add('hidden');
+      }
+    }
     
     const progressPercent = gameState.alivePlayersCount > 0 ? (gameState.votedCount / gameState.alivePlayersCount) * 100 : 0;
     document.getElementById('vote-progress').style.width = `${progressPercent}%`;
@@ -682,9 +703,24 @@ function setupChoiceEvents(pos, layerId, choiceId) {
   const newHotspot = hotspot.cloneNode(true);
   hotspot.parentNode.replaceChild(newHotspot, hotspot);
   
+  // Reset styles for general state
+  newTextContainer.style.opacity = '';
+  newTextContainer.style.pointerEvents = '';
+  newHotspot.style.pointerEvents = '';
+
   if (isGM) {
     newTextContainer.style.pointerEvents = 'none';
     newHotspot.style.pointerEvents = 'none';
+    newTextContainer.classList.remove('selected');
+    layerImg.classList.remove('glow-white');
+    return;
+  }
+
+  // Coward cannot select B ('오른쪽 노') in Round 3
+  if (me && me.role && me.role.realRole === '겁쟁이' && gameState.currentRound === 3 && choiceId === 'B') {
+    newTextContainer.style.pointerEvents = 'none';
+    newHotspot.style.pointerEvents = 'none';
+    newTextContainer.style.opacity = '0.3';
     newTextContainer.classList.remove('selected');
     layerImg.classList.remove('glow-white');
     return;

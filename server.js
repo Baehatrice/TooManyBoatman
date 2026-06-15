@@ -264,6 +264,13 @@ wss.on('connection', (ws) => {
           if (!clientName || clientName === '하영') return;
           const player = state.players[clientName];
           if (!player || !player.alive) return;
+          
+          // Coward cannot select B in Round 3
+          if (state.currentRound === 3 && player.role && player.role.realRole === '겁쟁이' && data.choice === 'B') {
+            console.log(`Blocked Coward player ${clientName} from voting for B in Round 3.`);
+            return;
+          }
+
           player.choice = data.choice;
           console.log(`Player ${clientName} voted: ${data.choice}`);
           broadcastState();
@@ -461,7 +468,7 @@ function processVotes() {
       // 1. 모두가 '아무도 버리지 않는다'를 선택한 경우
       state.score_arrival += 1;
       state.winningOption = 'none';
-      state.roundResultText = "아무도 버리고 갈 수 없습니다. 천운으로, 구명보트는 9명을 태우고도 가라앉지 않을듯 합니다.\n(모두 생존)";
+      state.roundResultText = "아무도 버리고 갈 수 없습니다. 천운으로, 구명보트는 모두를 태우고도 가라앉지 않을듯 합니다.\n(모두 생존)";
     } else {
       // Check if everyone got exactly 1 vote
       let everyoneGotOne = true;
@@ -475,7 +482,7 @@ function processVotes() {
         // 2. 모두가 1표씩 얻은 경우
         state.score_mountain += 1;
         state.winningOption = 'none';
-        state.roundResultText = "아무도 버리고 갈 수 없습니다. 천운으로, 구명보트는 9명을 태우고도 가라앉지 않을듯 합니다.\n(모두 생존)";
+        state.roundResultText = "아무도 버리고 갈 수 없습니다. 천운으로, 구명보트는 모두를 태우고도 가라앉지 않을듯 합니다.\n(모두 생존)";
       } else {
         // 3. 0표를 받은 사람이 있음
         // Anyone who got >= 1 vote is abandoned (dies). The 0-vote players survive.
@@ -528,25 +535,31 @@ function processVotes() {
   }
 
   // R1, R2, R3, R5: Standard majority vote with random tie-breaker
-  let options = ['A', 'B'];
-  if (round === 1 || round === 2 || round === 5) {
-    options.push('C');
-  }
-
-  let maxVotes = -1;
-  let winningOptions = [];
-
-  options.forEach(opt => {
-    if (votes[opt] > maxVotes) {
-      maxVotes = votes[opt];
-      winningOptions = [opt];
-    } else if (votes[opt] === maxVotes) {
-      winningOptions.push(opt);
+  let winningOption;
+  if (round === 3) {
+    // Override: A (Blue Line) only wins if votes are strictly greater than B (Red Line).
+    winningOption = (votes['A'] > votes['B']) ? 'A' : 'B';
+  } else {
+    let options = ['A', 'B'];
+    if (round === 1 || round === 2 || round === 5) {
+      options.push('C');
     }
-  });
 
-  // Tie breaker (randomly choose between the tied options)
-  const winningOption = winningOptions[Math.floor(Math.random() * winningOptions.length)];
+    let maxVotes = -1;
+    let winningOptions = [];
+
+    options.forEach(opt => {
+      if (votes[opt] > maxVotes) {
+        maxVotes = votes[opt];
+        winningOptions = [opt];
+      } else if (votes[opt] === maxVotes) {
+        winningOptions.push(opt);
+      }
+    });
+
+    // Tie breaker (randomly choose between the tied options)
+    winningOption = winningOptions[Math.floor(Math.random() * winningOptions.length)];
+  }
   state.winningOption = winningOption;
   console.log(`Round ${round} voting results:`, votes, `Winner: ${winningOption}`);
 
