@@ -146,6 +146,12 @@ document.getElementById('gm-next-btn').addEventListener('click', () => {
   }
 });
 
+document.getElementById('gm-back-btn').addEventListener('click', () => {
+  if (socket && socket.readyState === WebSocket.OPEN) {
+    socket.send(JSON.stringify({ type: 'gm_back', sender: '하영' }));
+  }
+});
+
 document.getElementById('gm-reset-in-game').addEventListener('click', () => {
   if (confirm("정말로 방을 폭파하고 처음으로 돌아가시겠습니까? 모든 플레이어가 퇴장됩니다.")) {
     if (socket && socket.readyState === WebSocket.OPEN) {
@@ -593,6 +599,14 @@ function renderGame() {
     document.getElementById('vote-progress').style.width = `${progressPercent}%`;
 
     const gmNextBtn = document.getElementById('gm-next-btn');
+    const gmBackBtn = document.getElementById('gm-back-btn');
+
+    if (phase === 'lobby' || phase === 'intro') {
+      gmBackBtn.classList.add('hidden');
+    } else {
+      gmBackBtn.classList.remove('hidden');
+    }
+
     if (phase === 'intro') {
       gmNextBtn.textContent = "시작하기";
       gmNextBtn.disabled = false;
@@ -718,7 +732,23 @@ function renderEnding() {
   const restartBtn = document.getElementById('restart-game-btn');
   const playerRestartMsg = document.getElementById('player-restart-msg');
 
-  textEl.innerHTML = gameState.endingText.replace(/\n/g, '<br>');
+  let endingText = gameState.endingText || "";
+  let header = "";
+  let body = "";
+
+  if (endingText.includes("]: GAME OVER. ")) {
+    const parts = endingText.split("]: GAME OVER. ");
+    header = parts[0] + "]: GAME OVER.";
+    body = parts[1] || "";
+  } else if (endingText.includes("]: ")) {
+    const parts = endingText.split("]: ");
+    header = parts[0] + "]";
+    body = parts[1] || "";
+  } else {
+    body = endingText;
+  }
+
+  textEl.innerHTML = `<div class="ending-header">${escapeHtml(header)}</div><div class="ending-body">${escapeHtml(body).replace(/\n/g, '<br>')}</div>`;
   arrivalEl.textContent = gameState.score_arrival;
   mountainEl.textContent = gameState.score_mountain;
 

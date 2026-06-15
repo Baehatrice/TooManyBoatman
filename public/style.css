@@ -508,6 +508,16 @@ button:disabled {
   padding: 0.9rem 1.6rem;
 }
 
+.gm-btn-row {
+  display: flex;
+  gap: 0.8rem;
+  width: 100%;
+}
+
+.gm-btn-row button {
+  flex: 1;
+}
+
 .vote-progress-bar-container {
   width: 100%;
   height: 10px;
@@ -844,17 +854,32 @@ button:disabled {
 }
 
 .ending-narration {
-  font-size: 0.95rem;
-  line-height: 1.6;
   color: #ffffff;
-  text-align: left;
+  text-align: center;
+  width: 100%;
+}
+
+.ending-header {
+  font-size: 1.65rem;
+  line-height: 1.4;
+  margin-top: 1rem;
+  margin-bottom: 2rem;
+  color: #ffffff;
+  text-align: center;
+  font-weight: normal;
+}
+
+.ending-body {
+  font-size: 1.15rem;
+  line-height: 1.8;
+  color: #aaaaaa;
+  text-align: center;
   white-space: pre-wrap;
+  font-weight: normal;
 }
 
 .score-summary {
-  font-size: 0.95rem;
-  color: #aaaaaa;
-  margin-bottom: 1rem;
+  display: none !important;
 }
 
 .score-summary span {

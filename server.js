@@ -106,6 +106,7 @@ let activeRoleIndices = shuffleArray([0, 1, 2, 3, 4, 5, 6]);
 let extraRoleIndices = [7, 8, 9, 10]; // roles 8-11 (indices 7-10) are plain roles
 
 // WebSocket connections mapping: name -> socket
+let stateHistory = [];
 const clients = new Map();
 let gmSocket = null;
 
@@ -254,6 +255,11 @@ wss.on('connection', (ws) => {
           handleGMNext();
           break;
 
+        case 'gm_back':
+          if (clientName !== '하영') return;
+          handleGMBack();
+          break;
+
         case 'player_vote':
           if (!clientName || clientName === '하영') return;
           const player = state.players[clientName];
@@ -323,6 +329,7 @@ wss.on('connection', (ws) => {
 });
 
 function resetGame() {
+  stateHistory = [];
   state = {
     phase: 'lobby',
     currentRound: 0,
@@ -343,9 +350,14 @@ function resetGame() {
 }
 
 function handleGMNext() {
+  // Save current state to history before transition
+  stateHistory.push(JSON.parse(JSON.stringify(state)));
+
   if (state.phase === 'lobby') {
     if (state.playerOrder.length < 3) {
       console.log("Cannot start game: Need at least 3 players.");
+      // Remove last history entry if failed to transition
+      stateHistory.pop();
       return;
     }
     state.phase = 'intro';
@@ -378,6 +390,36 @@ function handleGMNext() {
   } else if (state.phase === 'ending') {
     // Already at ending, reset or stay
   }
+  broadcastState();
+}
+
+function handleGMBack() {
+  if (stateHistory.length === 0) return;
+
+  // Capture current online status of all players
+  const currentOnlineStatus = {};
+  state.playerOrder.forEach(name => {
+    if (state.players[name]) {
+      currentOnlineStatus[name] = state.players[name].isOnline;
+    }
+  });
+
+  // Restore previous state
+  state = stateHistory.pop();
+
+  // Restore online status
+  state.playerOrder.forEach(name => {
+    if (state.players[name] && currentOnlineStatus[name] !== undefined) {
+      state.players[name].isOnline = currentOnlineStatus[name];
+    }
+  });
+
+  // If the restored state is in the voting subphase, clear votes so they can re-choose
+  if (state.phase === 'round' && state.roundSubphase === 'voting') {
+    clearVotes();
+  }
+
+  console.log(`GM reverted back to phase: ${state.phase}, round: ${state.currentRound}`);
   broadcastState();
 }
 
