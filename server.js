@@ -586,19 +586,22 @@ function processVotes() {
       state.roundResultText = "불을 조금이라도 킨 덕에, 위험한 상황들은 대처할 수 있었지만 어둠 속에서 모두가 서로를 의심하기 시작했습니다. 뒤늦게 숨겨진 기름병들이 발견되자, 배 안의 침묵은 더 무거워졌습니다.";
     }
   } else if (round === 3) {
+    const aCount = alivePlayers.filter(name => state.players[name].choice === 'A').length;
+    const bCount = alivePlayers.filter(name => state.players[name].choice === 'B').length;
+
+    let resultNarrative = "";
     if (winningOption === 'A') {
       // Kill all who chose A
-      let killedCount = 0;
       alivePlayers.forEach(name => {
         if (state.players[name].choice === 'A') {
           state.players[name].alive = false;
-          killedCount++;
         }
       });
-      state.roundResultText = "이런... 파란 줄 자리로 너무 많이 몰려든 탓에 중심을 잃고 쓰러졌습니다. 그 순간, 폭풍이 당신들을 데리고 가버렸습니다. (파란 줄을 선택한 사공 사망)";
+      resultNarrative = "이런... 파란 줄 자리로 너무 많이 몰려든 탓에 중심을 잃고 쓰러졌습니다. 그 순간, 폭풍이 당신들을 데리고 가버렸습니다. (파란 줄을 선택한 사공 사망)";
     } else if (winningOption === 'B') {
-      state.roundResultText = "생각보다 폭풍은 거세지 않았고, 모든 이들이 살아남았습니다.";
+      resultNarrative = "생각보다 폭풍은 거세지 않았고, 모든 이들이 살아남았습니다.";
     }
+    state.roundResultText = `[파란 줄 선택]: ${aCount}명 | [빨간 줄 선택]: ${bCount}명\n\n${resultNarrative}`;
   } else if (round === 5) {
     if (winningOption === 'A') {
       state.score_arrival += 1;

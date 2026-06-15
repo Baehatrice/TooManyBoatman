@@ -264,17 +264,17 @@ function renderLobby() {
     cardDiv.innerHTML = `
       <div class="role-card">
         <div class="role-card-header">
-          <div class="label">GAME MASTER</div>
-          <h2>하영 (게임 마스터)</h2>
+          <div class="label" style="font-size: 0.9rem;">GAME MASTER</div>
+          <h2 style="font-size: 2rem;">하영 (게임 마스터)</h2>
         </div>
         <div class="role-card-info">
           <div class="info-item">
-            <div class="info-title">역할 안내</div>
-            <div class="info-val">당신은 게임 진행자(GM)입니다. 플레이어들이 역할을 파악하고 의사소통할 수 있도록 중재해 주세요. 모든 사공이 대기방에 입장하면 '게임 시작'을 눌러 게임을 진행할 수 있습니다.</div>
+            <div class="info-title" style="font-size: 0.9rem;">역할 안내</div>
+            <div class="info-val" style="font-size: 1.2rem; line-height: 1.6;">당신은 게임 진행자(GM)입니다. 플레이어들이 역할을 파악하고 의사소통할 수 있도록 중재해 주세요. 모든 사공이 대기방에 입장하면 '게임 시작'을 눌러 게임을 진행할 수 있습니다.</div>
           </div>
           <div class="info-item">
-            <div class="info-title">안내 조건</div>
-            <div class="info-val">GM 제외 최소 3명부터 최대 11명의 사공이 참여할 수 있습니다.</div>
+            <div class="info-title" style="font-size: 0.9rem;">안내 조건</div>
+            <div class="info-val" style="font-size: 1.2rem; line-height: 1.6;">GM 제외 최소 3명부터 최대 11명의 사공이 참여할 수 있습니다.</div>
           </div>
         </div>
       </div>
@@ -466,7 +466,7 @@ function renderGame() {
     }
   } else if (phase === 'round_result') {
     let choiceHeader = "";
-    if (round >= 1 && round <= 5 && gameState.winningOption && roundData[round] && roundData[round].choices) {
+    if (round >= 1 && round <= 5 && round !== 3 && gameState.winningOption && roundData[round] && roundData[round].choices) {
       const selectedChoice = roundData[round].choices.find(c => c.id === gameState.winningOption);
       if (selectedChoice) {
         const cleanChoiceText = selectedChoice.text.replace(/\n/g, " ");
@@ -825,6 +825,24 @@ function renderEnding() {
   textEl.innerHTML = `<div class="ending-header">${escapeHtml(header)}</div><div class="ending-body">${escapeHtml(body).replace(/\n/g, '<br>')}</div>`;
   arrivalEl.textContent = gameState.score_arrival;
   mountainEl.textContent = gameState.score_mountain;
+
+  // Load ending background image
+  const endingBg = document.getElementById('ending-bg');
+  if (endingBg) {
+    if (endingText.includes("엔딩 2")) {
+      endingBg.src = "/Resources/ED-2.jpg";
+      endingBg.classList.remove('hidden');
+    } else if (endingText.includes("엔딩 3")) {
+      endingBg.src = "/Resources/ED-3.jpg";
+      endingBg.classList.remove('hidden');
+    } else if (endingText.includes("엔딩 5")) {
+      endingBg.src = "/Resources/ED-5.jpg";
+      endingBg.classList.remove('hidden');
+    } else {
+      endingBg.src = "";
+      endingBg.classList.add('hidden');
+    }
+  }
 
   if (isGM) {
     restartBtn.classList.remove('hidden');

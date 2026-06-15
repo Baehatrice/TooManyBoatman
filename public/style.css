@@ -354,8 +354,12 @@ button:disabled {
   gap: 0.8rem;
 }
 
+.gm-btn-group button {
+  font-size: 1.15rem;
+}
+
 .gm-status {
-  font-size: 0.95rem;
+  font-size: 1.25rem;
   font-weight: normal;
 }
 
@@ -825,7 +829,12 @@ button:disabled {
   background-image: repeating-linear-gradient(45deg, #111111, #111111 1px, #000000 1px, #000000 2px);
 }
 
+#ending-bg {
+  z-index: 1;
+}
+
 .ending-box {
+  z-index: 10;
   position: absolute;
   left: 610px;
   top: 240px;
