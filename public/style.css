@@ -258,11 +258,11 @@ button:disabled {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 0.95rem;
+  font-size: 1.15rem;
 }
 
 .role-badge {
-  font-size: 0.8rem;
+  font-size: 0.95rem;
   padding: 0.1rem 0.4rem;
   background-color: #ffffff;
   color: #000000;
@@ -374,6 +374,10 @@ button:disabled {
   align-items: center;
   width: 100%;
   font-size: 0.95rem;
+}
+
+.player-status-container-lobby p {
+  font-size: 1.25rem;
 }
 
 .leave-btn {

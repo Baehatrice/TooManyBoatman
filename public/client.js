@@ -298,25 +298,25 @@ function renderLobby() {
 
         cardDiv.innerHTML = `
           <div class="role-card">
-            <!-- Emphasized warning box (black text on white box) -->
-            <div style="background-color: #ffffff; color: #000000; padding: 0.8rem; border: 2px solid #000000; margin-bottom: 1.2rem; text-align: center; font-size: 1rem; line-height: 1.5;">
-              쉿, 이 정보는 당신만 아는 비밀이에요.<br>말했다간 무슨 일이 벌어질지 모르죠.
-            </div>
-            
-            <!-- Disguised identity shrunken and labelized -->
-            <div class="role-card-header" style="border-bottom: 1px dashed #555555; padding-bottom: 0.5rem; margin-bottom: 1rem; text-align: left;">
-              <div class="label" style="font-size: 0.8rem; color: #aaaaaa;">대외적으로 위장할 신분</div>
+            <!-- Disguised identity header (Moved to the very top) -->
+            <div class="role-card-header" style="border-bottom: 1px dashed #555555; padding-bottom: 0.5rem; margin-bottom: 1.2rem; text-align: left;">
+              <div class="label" style="font-size: 0.8rem; color: #aaaaaa;">대외적으로 위장한 신분</div>
               <h3 style="font-size: 1.25rem; color: #aaaaaa; margin-top: 0.1rem; text-decoration: line-through;">${escapeHtml(role.disguisedRole)}</h3>
+            </div>
+
+            <!-- Emphasized warning box (black text on white box, modified message text) -->
+            <div style="background-color: #ffffff; color: #000000; padding: 0.8rem; border: 2px solid #000000; margin-bottom: 1.2rem; text-align: center; font-size: 1rem; line-height: 1.5;">
+              쉿, 아래 정보는 당신만 아는 비밀이에요.<br>말했다간 무슨 일이 벌어질지 모르죠.
             </div>
 
             <!-- Double-border container for real identity & prompt details -->
             <div class="role-card-info">
               <div style="border: 4px double #ffffff; background-color: #000000; padding: 1rem;">
-                <div class="info-title" style="color: #ffffff; font-size: 0.85rem; margin-bottom: 0.5rem; letter-spacing: 1px;">★ 당신의 진짜 정체 (절대 들통 나서는 안 됩니다)</div>
+                <div class="info-title" style="color: #ffffff; font-size: 1.15rem; margin-bottom: 0.5rem; letter-spacing: 1px;">★ 당신의 진짜 정체 (만약 말한다면...)</div>
                 <div class="info-val" style="font-size: 1.5rem; background-color: #ffffff; color: #000000; padding: 0.3rem 0.6rem; display: inline-block; margin-bottom: 0.8rem;">
                   ${escapeHtml(role.realRole)}
                 </div>
-                <div style="font-size: 1.05rem; line-height: 1.5; color: #ffffff; border-top: 1px dashed #ffffff; padding-top: 0.6rem; margin-top: 0.4rem;">
+                <div style="font-size: 1rem; line-height: 1.6; color: #dddddd; font-weight: normal; border-top: 1px dashed #555555; padding-top: 0.6rem; margin-top: 0.4rem;">
                   ${escapeHtml(displayPrompt).replace(/\n/g, '<br>')}
                 </div>
               </div>
@@ -430,11 +430,11 @@ function renderGame() {
     const detailsContent = document.getElementById('secret-details-content');
     if (details.role.realRole !== details.role.disguisedRole) {
       detailsContent.innerHTML = `
+        <p style="font-size: 0.95rem; color: #aaaaaa; text-decoration: line-through; margin-bottom: 0.8rem;">대외 신분: ${escapeHtml(details.role.disguisedRole)}</p>
         <div style="background-color: #ffffff; color: #000000; padding: 0.6rem; text-align: center; font-size: 0.95rem; line-height: 1.4; border: 2px solid #000000; margin-bottom: 0.8rem;">
-          쉿, 이 정보는 당신만 아는 비밀이에요.<br>말했다간 무슨 일이 벌어질지 모르죠.
+          쉿, 아래 정보는 당신만 아는 비밀이에요.<br>말했다간 무슨 일이 벌어질지 모르죠.
         </div>
-        <p style="font-size: 0.95rem; color: #aaaaaa; text-decoration: line-through;">대외 신분: ${escapeHtml(details.role.disguisedRole)}</p>
-        <p style="font-size: 1.1rem; margin-top: 0.4rem;">진짜 신분: <span class="highlight" style="font-size: 1.25rem; padding: 0.2rem 0.5rem; display: inline-block;">${escapeHtml(details.role.realRole)}</span></p>
+        <p style="font-size: 1.15rem; margin-top: 0.4rem;">★ 진짜 신분: <span class="highlight" style="font-size: 1.35rem; padding: 0.2rem 0.5rem; display: inline-block;">${escapeHtml(details.role.realRole)}</span></p>
       `;
     } else {
       detailsContent.innerHTML = `
