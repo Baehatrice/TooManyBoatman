@@ -88,9 +88,9 @@ function connect() {
     if (socket && socket.readyState === WebSocket.OPEN) {
       socket.send(JSON.stringify({ type: 'ping' }));
     }
-    // Watchdog check: If no message has been received for >60 seconds, assume connection is dead
-    if (Date.now() - lastActiveTime > 60000) {
-      console.warn("Heartbeat timeout (60s). Closing socket to trigger reconnect...");
+    // Watchdog check: If no message has been received for >300 seconds (5 minutes), assume connection is dead
+    if (Date.now() - lastActiveTime > 300000) {
+      console.warn("Heartbeat timeout (300s). Closing socket to trigger reconnect...");
       if (socket) {
         try {
           socket.close();
