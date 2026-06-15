@@ -323,7 +323,7 @@ function renderLobby() {
             <!-- Double-border container for real identity & prompt details -->
             <div class="role-card-info">
               <div style="border: 4px double #ffffff; background-color: #000000; padding: 1rem;">
-                <div class="info-title" style="color: #ffffff; font-size: 1.15rem; margin-bottom: 0.5rem; letter-spacing: 1px;">★ 당신의 진짜 정체 (만약 말한다면...)</div>
+                <div class="info-title" style="color: #ffffff; font-size: 1.05rem; margin-bottom: 0.5rem; letter-spacing: 0.5px; white-space: nowrap;">★ 당신의 진짜 정체 (만약 말한다면...)</div>
                 <div class="info-val" style="font-size: 1.5rem; background-color: #ffffff; color: #000000; padding: 0.3rem 0.6rem; display: inline-block; margin-bottom: 0.8rem;">
                   ${escapeHtml(role.realRole)}
                 </div>
