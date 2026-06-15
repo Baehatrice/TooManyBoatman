@@ -7,7 +7,7 @@ let pingInterval = null;
 // Game rounds constant data for presentation
 const roundData = {
   0: { // Intro
-    narrative: "당신들은 배에 타 있습니다..\n옮겨야 할 중요한 짐이 있고,\n강은 너무 크고 복잡하며,\n함께 탄 이들의 속내는 모릅니다.\n수상한 사람도 속해있는 것 같네요.\n\n이 배는 어디로 갈까요?\n\n배의 분위기는 좋지 않습니다...\n위험한 길이란 것을 모두가 알아서 긴장하고 있습니다.\n까딱 말을 잘못하다가는 누군가를 버리고 갈 분위기군요.\n\n그래도 기억하세요. 배는 혼자서는 움직이지 않습니다."
+    narrative: "당신들은 배에 타 있습니다..\n옮겨야 할 중요한 짐이 있고,\n강은 너무 크고 복잡하며,\n계속 노를 저어야 합니다.\n함께 탄 이들의 속내는 모릅니다.\n수상한 사람도 속해있는 것 같네요.\n\n이 배는 어디로 갈까요?\n\n배의 분위기는 좋지 않습니다...\n위험한 길이란 것을 모두가 알아서 긴장하고 있습니다.\n까딱 말을 잘못하다가는 누군가를 버리고 갈 분위기군요.\n\n그래도 기억하세요. 배는 혼자서는 움직이지 않습니다."
   },
   1: {
     title: "라운드 1: 앞길을 가로막은 바위",
@@ -45,7 +45,7 @@ const roundData = {
   },
   5: {
     title: "라운드 5: 침수되는 선실",
-    narrative: "폭풍으로 배에 물이 차기 시작했습니다. 무게를 줄여야 합니다.",
+    narrative: "이런, 갑작스런 사고로 배가 망가져 배에 물이 차기 시작했습니다. 무게를 줄여야 합니다.",
     choices: [
       { id: "A", label: "왼쪽 노 (A)", text: "옮겨야 하는 화물을 버린다.", type: "left-paddle" },
       { id: "C", label: "가운데 배 (C)", text: "일부 인원을 버리고 간다.", type: "center-boat" },
@@ -54,7 +54,7 @@ const roundData = {
   },
   6: {
     title: "라운드 6: 침몰하는 구명보트",
-    narrative: "배가 기울기 시작합니다. 그런데 구명보트가 작아 모두가 탈 수 없을 것 같군요...누구를 버리고 가야할까요?"
+    narrative: "이전에 사고가 문제였는지, 이제는 아예 배가 기울기 시작합니다. 여기서 도망쳐야 합니다. 그런데 구명보트가 작아 모두가 탈 수 없을 것 같군요...누구를 버리고 가야할까요? "
   }
 };
 
@@ -477,7 +477,7 @@ function renderGame() {
     }
   } else if (phase === 'round_result') {
     let choiceHeader = "";
-    if (round >= 1 && round <= 5 && round !== 3 && gameState.winningOption && roundData[round] && roundData[round].choices) {
+    if (round >= 1 && round <= 5 && round !== 3 && round !== 4 && gameState.winningOption && roundData[round] && roundData[round].choices) {
       const selectedChoice = roundData[round].choices.find(c => c.id === gameState.winningOption);
       if (selectedChoice) {
         const cleanChoiceText = selectedChoice.text.replace(/\n/g, " ");

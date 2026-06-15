@@ -521,20 +521,22 @@ function processVotes() {
   if (round === 4) {
     const aCount = votes['A'] || 0;
     const bCount = votes['B'] || 0;
+    let resultNarrative = "";
     if (aCount === totalAlive) {
       state.winningOption = 'A';
       state.score_arrival += 1;
-      state.roundResultText = "공동 창고에 보관하니 모두가 매일 공평한 양으로 나눠먹을 수 있게 됐습니다.";
+      resultNarrative = "공동 창고에 보관하니 모두가 매일 공평한 양으로 나눠먹을 수 있게 됐습니다.";
     } else if (bCount === totalAlive) {
       state.winningOption = 'B';
       // Kill all
       alivePlayers.forEach(name => state.players[name].alive = false);
-      state.roundResultText = "이런, 하늘에서 사나운 새가 와서 가방을 물고 가버렸습니다. 이제 배에 식량은 없습니다. (모든 플레이어 사망)";
+      resultNarrative = "이런, 하늘에서 사나운 새가 와서 가방을 물고 가버렸습니다. 이제 배에 식량은 없습니다. (모든 플레이어 사망)";
     } else {
       state.winningOption = 'A+B';
       state.score_mountain += 1;
-      state.roundResultText = "이런, 하늘에서 사나운 새가 와서 가방을 물고 가버렸습니다. 가방이 눈앞에서 사라지고 절규하는 사람들을 보며, 나머지 사람들은 가방에 식량을 숨겨두고 있는 사람들이 있음을 눈치챘습니다.";
+      resultNarrative = "몇몇 사람들은 공동 창고에 음식 전부를 냈습니다. 하지만 몇몇 개인 가방 안에 음식물을 그대로 두고 있는 것 같군요. 그날 밤, 하늘에서 사나운 새 떼가 몰려와 가방을 물고 가버렸습니다. 가방이 눈앞에서 사라지고 절규하는 사람들을 보며, 나머지 사람들은 가방에 식량을 숨겨뒀던 이들이 있음을 눈치챘습니다.";
     }
+    state.roundResultText = `[공동 창고에 내기로 한 사람]: ${aCount}명 | [개인 가방에 몰래 숨기기로 한 사람]: ${bCount}명\n\n${resultNarrative}`;
     return;
   }
 
