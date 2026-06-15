@@ -2,6 +2,7 @@ let socket = null;
 let currentName = "";
 let isGM = false;
 let gameState = null;
+let pingInterval = null;
 
 // Game rounds constant data for presentation
 const roundData = {
@@ -76,6 +77,16 @@ function connect() {
   const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
   const socketUrl = `${protocol}//${window.location.host}`;
   socket = new WebSocket(socketUrl);
+
+  // Setup keep-alive heartbeat to prevent Render timeout closures
+  if (pingInterval) {
+    clearInterval(pingInterval);
+  }
+  pingInterval = setInterval(() => {
+    if (socket && socket.readyState === WebSocket.OPEN) {
+      socket.send(JSON.stringify({ type: 'ping' }));
+    }
+  }, 20000);
 
   socket.onopen = () => {
     console.log("Connected to server");
@@ -512,10 +523,10 @@ function renderGame() {
   hotspotRight.classList.add('hidden');
   r6GridContainer.classList.add('hidden');
 
-  // Death eliminations
+  // Death eliminations: Bypass death overlay during round_result so players can read how they died
   const deathOverlay = document.getElementById('death-overlay');
   deathOverlay.classList.add('hidden');
-  if (!isGM && gameState.playerDetails && !gameState.playerDetails.alive) {
+  if (!isGM && gameState.playerDetails && !gameState.playerDetails.alive && phase !== 'round_result' && phase !== 'ending') {
     deathOverlay.classList.remove('hidden');
   }
 

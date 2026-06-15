@@ -291,6 +291,10 @@ wss.on('connection', (ws) => {
             resetGame();
           }
           break;
+
+        case 'ping':
+          // Keep-alive heartbeat, do nothing
+          break;
       }
     } catch (e) {
       console.error("Error processing message:", e);
